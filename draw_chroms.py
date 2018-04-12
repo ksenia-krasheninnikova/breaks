@@ -2,7 +2,7 @@
 
 import sys, os
 from argparse import ArgumentParser
-from model import Anchor
+from breakpoint_graph import Anchor
 from sumup_breaks import Breakpoint
 import matplotlib
 matplotlib.use('Agg')
