@@ -1,6 +1,10 @@
+synteny/ contains code for convertions of pairwise psl alignments into synteny blocks
+
+gene_breaks/ contains code for convertions of single nucleotide markers into breakpoints
+
 Example usage:
 
-Search for breakspoints in query.
+Search for breakpoints in query.
 ```bash
 ${REPO_PATH}/order_query_by_target.py --reference ${REPO_PATH}/data/hits/A.bed --query ${REPO_PATH}/data/hits/B.bed | sort | uniq > ${REPO_PATH}/data/breaks/case1.breaks
 ```
