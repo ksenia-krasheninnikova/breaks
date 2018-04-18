@@ -1,0 +1,5 @@
+scaffold10  1   100 chr1    1   100 +
+scaffold10  100 200 chr1    100 200 +
+scaffold10  200 300 chr1    200 300 +
+scaffold10  250 350 chr1   300 400 +
+scaffold10  400 500 chr1    400 500 +
