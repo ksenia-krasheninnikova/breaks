@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 from argparse import ArgumentParser
 from itertools import groupby
 import time
