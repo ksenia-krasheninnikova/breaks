@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <ctime> 
 
 #include "psl_reader.h"
 
@@ -73,17 +74,16 @@ std::map<int, std::pair<int, int> > weigh_dag(const std::vector<PslBlock>& group
         std::vector<int> nexts;
         if (not dag.count(i)) {
             nexts = get_next(i, group, maxAnchorDistance);
-            /*
-            for (auto n : nexts) {
-            std::cout << n << " ";
-            }
-            std::cout << std::endl;
-            */
             dag[i] = nexts;
         }
         else {
             nexts = dag[i];
        }
+       //std::cout << i;
+       //for (auto n : nexts) {
+       //std::cout << " " << n;
+       //}
+       //std::cout << std::endl;
        /*
        if never visited this vertex then
        its weight equals to its size
@@ -101,14 +101,15 @@ std::map<int, std::pair<int, int> > weigh_dag(const std::vector<PslBlock>& group
     }
     //std::cout << "weighted dag\n";
     //for (auto it = weightedDag.cbegin(); it != weightedDag.cend(); ++it) {
-    //    std::cout << it ->first << " " << it->second.first << " " << it->second.second << std::endl;
+    //    std::cout << it ->first << " " << group[it->first].qStart <<  " " << group[it->first].qEnd << " " << group[it->first].tStart 
+    //        << " "<< it->second.first << " " << it->second.second << std::endl;
     //}
     return weightedDag; 
 }
 
 int get_maxed_vertex(const std::map<int, std::pair<int, int> >& weightedDag) {
-    int max = -10;
-    int maxPos = -1;
+    int max = weightedDag.cbegin()->second.second;
+    int maxPos = weightedDag.cbegin()->first;
     for (auto it = weightedDag.cbegin(); it != weightedDag.cend(); ++it) {
         //std::cout << "it->second.second " << it->second.second << std::endl;
         if (it->second.second >= max) {
@@ -137,7 +138,7 @@ std::vector<PslBlock> traceback(std::map<int, std::pair<int, int> >& weightedDag
     std::vector<PslBlock> pslBlockPath;
     //std::cout << "path size " << path.size() << std::endl;
     //for (auto p: path) {
-    //    std::cout << p << " " << group[p].qStart << " ";
+    //    std::cout << group[p].qStart << " " << group[p].qEnd << " " << group[p].strand << " " << group[p].tStart << " " << group[p].tEnd << std::endl;
     //}
     //std::cout << std::endl;
     //std::cout << 4 << std::endl;
@@ -150,37 +151,66 @@ std::vector<PslBlock> traceback(std::map<int, std::pair<int, int> >& weightedDag
 struct {    
     bool operator()(PslBlock a, PslBlock b) const
     {
-        return a.qStart < b.qStart && a.tStart < b.tStart;
+        //return a.qStart < b.qStart && a.tStart < b.tStart;
+        if (a.qStart < b.qStart )
+            return true;
+        else if (a.qStart == b.qStart) {
+            return a.tStart <= b.tStart;
+        }
+        return false;
     }
 } qStartLess;
+
+/*struct {    
+    bool operator()(PslBlock a, PslBlock b) const
+    {
+        //return a.qStart < b.qStart && a.tStart < b.tStart;
+        return a.tStart < b.tStart;
+    }
+} tStartLess;
+*/
 
 std::vector<std::vector<PslBlock> >  dag_merge(const std::vector<PslBlock>& blocks, const int minBlockBreath, const int maxAnchorDistance){
     std::map<std::string, std::vector<PslBlock> > blocksByQName;
     for (auto block : blocks) blocksByQName[block.qName].push_back(block);
+    //for (auto pairs : blocksByQName) {
+    //    std::cout << pairs.first << " " << pairs.second.size() << std::endl;
+    //}
     std::vector<std::vector<PslBlock> > paths;
     for (auto pairs : blocksByQName) {
+        //if (pairs.first != "scaffold1")
+        //    continue;
         std::vector<PslBlock> group = pairs.second; 
         std::map<int, std::vector<int> > dag;
         std::set<int> hiddenVertices;
         std::sort(group.begin(), group.end(), qStartLess); 
+        //std::stable_sort(group.begin(), group.end(), tStartLess); 
+        //for (auto g: group){
+        //    std::cout << g.qStart << " " << g.qName << " " << g.tStart << " " << g.tName<< std::endl;
+        //}
+        //std::cout << std::endl;
         while (hiddenVertices.size() != group.size()){
-            //std::cout << 10 << std::endl;
+            //std::cout << "size " << hiddenVertices.size() << std::endl;
+            //auto t = clock();
             auto weightedDag = weigh_dag(group, dag, hiddenVertices, maxAnchorDistance);
-            //std::cout << "group size " << group.size() << " hidden vertices size " << hiddenVertices.size() << std::endl;
-            //std::cout << 2 << std::endl;
+            //std::cout << "get_next time " << float(clock() - t)/CLOCKS_PER_SEC << std::endl;
+            //t = clock();
             auto path = traceback(weightedDag, hiddenVertices, group);
+            //std::cout << "traceback time " << float(clock() - t)/CLOCKS_PER_SEC << std::endl;
             //std::cout << path.size() << std::endl;
             if (path.empty()) {
                 break;
             }
-            //std::cout << 7 << std::endl;
             auto qLen = path.back().qEnd - path[0].qStart;
             auto tLen = path.back().tEnd - path[0].tStart;
-            //std::cout << 8 << std::endl;
-            if (qLen >= minBlockBreath && tLen >= minBlockBreath)
+               // std::cout << path.size() << " " << tLen << " " << qLen << " " << minBlockBreath;
+            if (qLen >= minBlockBreath && tLen >= minBlockBreath){
                 paths.push_back(path);
-            //std::cout << 9 << std::endl;
-
+                //std::cout << " OK" << std::endl;
+            }
+            //else
+            //    std::cout << std::endl;
+            //std::cout << pairs.first << " group size " << group.size() << " hidden vertices size " << hiddenVertices.size() << std::endl;
         }
     }
     return paths;
@@ -188,8 +218,9 @@ std::vector<std::vector<PslBlock> >  dag_merge(const std::vector<PslBlock>& bloc
 
 
 int main() {
-    auto path = "/Users/admin/projects/breaks/data/AcinonyxJubatus.FelisCatus.19.psl";
+    //auto path = "/Users/admin/projects/breaks/data/AcinonyxJubatus.FelisCatus.19.psl";
     //auto path = "/hive/groups/recon/projs/felidae_comp/synteny-play-ground/data/felidae/cheetah/AcinonyxJubatus.FelisCatus.19.psl";
+    auto path = "/mnt/storagesm/projects/12cats/ksenia/felidae_comp/synteny-play-ground/data/felidae/cheetah/AcinonyxJubatus.FelisCatus.19.psl";
     auto min_block_size = 5000;
     auto max_anchor_distance = 5000;
     /*
@@ -201,13 +232,6 @@ int main() {
     auto blocks = psl_io::get_blocks_set(path);
     auto merged_blocks = dag_merge(blocks, min_block_size, max_anchor_distance);
     for (auto path : merged_blocks){
-        /*if (path[0].qName == "scaffold155" && path[0].qStart == 2646) { 
-            for (auto b: path) {
-                std::cout << b.qStart << " " << b.qEnd << " " << b.tStart << " " << b.tEnd << " " << b.size << " " << b.strand << "\n";
-            }
-            std::cout << path.size() << std::endl;
-        }*/
-        //if (path[0].qName == "scaffold155" && path[0].qStart == 2646) 
         auto psl = psl_io::construct_psl(path);
         std::cout << psl << std::endl;
     } 

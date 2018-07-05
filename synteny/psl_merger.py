@@ -95,7 +95,7 @@ def dag_merge(psl, min_block_breath, max_anchor_distance):
     for group in blocks_grouped_by_query:
         dag = {}
         hidden_vertices = set()
-        group = sorted(group, key=lambda x: x.qStart)
+        group = sorted(group, key=lambda x: (x.qStart, x.tStart))
         while len(group) != len(hidden_vertices):
             ts = time.time()
             weighted_dag = weigh_dag(group, dag, hidden_vertices, max_anchor_distance)

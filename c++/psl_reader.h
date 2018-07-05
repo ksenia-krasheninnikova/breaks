@@ -71,8 +71,6 @@ std::vector<int> get_tInserts(const std::vector<PslBlock>& blocks) {
     psl.tName = blocks[0].tName;
     psl.tSize = blocks[0].tSize;
     psl.strand = blocks[0].strand; 
-    psl.tStart = blocks.back().tStart;
-    psl.tEnd = blocks.back().tEnd;
     psl.blockCount = blocks.size();
     if (psl.strand == "++") {
         psl.tStart = blocks[0].tStart;
