@@ -1,11 +1,9 @@
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-
-#include "psl.h"
-
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+#include "psl_io.h"
 
 namespace psl_io {
 std::vector<std::string> split(const std::string &s, char delim) {
@@ -34,7 +32,6 @@ std::vector<int> get_qInserts(const std::vector<PslBlock>& blocks) {
     for (int i=0; i < blocks.size()-1; ++i) {
         auto dif = blocks[i+1].qStart - blocks[i].qEnd;
         if (dif > 0) {
-            //std::cout << dif << std::endl;
             result.push_back(dif);
         }
     }
@@ -54,7 +51,9 @@ std::vector<int> get_tInserts(const std::vector<PslBlock>& blocks) {
 
  Psl construct_psl(std::vector<PslBlock> blocks) {
     auto psl = Psl();
-    psl.match = std::accumulate(blocks.begin(), blocks.end(), 0, [] (int total, PslBlock item) { return total + item.qEnd - item.qStart; });
+    psl.match = std::accumulate(blocks.begin(), blocks.end(), 0, 
+            [] (int total, PslBlock item) 
+            { return total + item.qEnd - item.qStart; });
     psl.misMatch = 0;
     psl.repMatch = 0;
     psl.nCount = 0;
@@ -83,6 +82,15 @@ std::vector<int> get_tInserts(const std::vector<PslBlock>& blocks) {
     psl.blocks = blocks;
     return psl;
  }
+ 
+ void write_psl(const std::vector<std::vector<PslBlock> >& merged_blocks, 
+         const std::string& outFilePath) {
+    std::ofstream ofs;
+    ofs.open (outFilePath, std::ofstream::out);
+    for (auto path : merged_blocks){
+        auto psl = construct_psl(path);
+        ofs << psl << std::endl;
+    } 
+    ofs.close();
  }
-
-
+ }

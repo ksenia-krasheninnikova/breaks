@@ -1,0 +1,4 @@
+*.o
+*.psl
+*.dSYM
+psl2synteny

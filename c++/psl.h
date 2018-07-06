@@ -1,10 +1,12 @@
+#ifndef PSL_H
+#define PSL_H
+
 #include <string>
 #include <numeric>
 #include <sstream>
 #include <iterator>
 
 class PslBlock {
-    //Block of a PSL
     public:
     int qStart;
     int qEnd;
@@ -74,7 +76,6 @@ class Psl {
     }
     
     std::vector<int> intArraySplit(const std::string& commaStr){
-        //parser for comma-separated string list into a list of ints
         std::vector<int> ints;
         for (auto s : split(commaStr,','))
             ints.push_back(stoi(s));
@@ -97,18 +98,12 @@ class Psl {
             qSeqs = split(qSeqsStr,',');
             tSeqs = split(tSeqsStr,',');
         }
-        /*
-        std::cout << "blockCount " << blockCount << std::endl;
-        for (auto b : blockSizes) {
-            std::cout << b << " ";
-        }
-        std::cout << std::endl;
-        */
         for (int i = 0; i < this->blockCount; ++i){
-            this->blocks.push_back(PslBlock( qStarts[i], tStarts[i], blockSizes[i], strand,
-                                             qName, tName, qSize, tSize, 
-                                         (haveSeqs ? qSeqs[i] : ""),
-                                         (haveSeqs ? tSeqs[i] : "")));
+            this->blocks.push_back(PslBlock( qStarts[i], tStarts[i], 
+                                            blockSizes[i], strand,
+                                            qName, tName, qSize, tSize, 
+                                            (haveSeqs ? qSeqs[i] : ""),
+                                            (haveSeqs ? tSeqs[i] : "")));
         }
     }
     
@@ -137,7 +132,6 @@ class Psl {
                            (haveSeqs ? row[22] : ""));
     }
 
-    //template <class T>
     std::string vector_join(std::vector<std::string> v, std::string sep) const {
         std::string s = "";
         for (int i = 0; i < v.size(); ++i) {
@@ -196,8 +190,8 @@ class Psl {
         v.push_back(a.vector_join(ints, ",")+",");
         v.push_back(a.vector_join(qstarts, ",")+",");
         v.push_back(a.vector_join(tstarts, ",")+",");
-        //TODO add qseqs and tseqs!
+        //TODO: add qseqs and tseqs!
         return strm << a.vector_join(v, "\t");
     }
 
-
+#endif /*PSL_H*/
