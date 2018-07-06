@@ -25,10 +25,6 @@ static hal::CLParserPtr initParser() {
 
 
 int main(int argc, char *argv[]) {
-    //auto path = "/Users/admin/projects/breaks/data/AcinonyxJubatus.FelisCatus.19.psl";
-    
-//    auto min_block_size = 5000;
-//    auto max_anchor_distance = 5000;
     hal::CLParserPtr optionsParser = initParser();
     std::string inPslPath;
     std::string outPslPath;
@@ -50,9 +46,5 @@ int main(int argc, char *argv[]) {
     auto blocks = psl_io::get_blocks_set(inPslPath);
     auto merged_blocks = dag_merge(blocks, minBlockSize, maxAnchorDistance);
     psl_io::write_psl(merged_blocks, outPslPath);
-//    for (auto path : merged_blocks){
-//        auto psl = psl_io::construct_psl(path);
-//        std::cout << psl << std::endl;
-//    } 
     return 0;
 }
