@@ -12,7 +12,7 @@ Set ```rootPath``` in Makefile
 ```
 cd c++
 make
-./hal2synteny /public/groups/cgl/felidae/cactus.hal out.psl --maxAnchorDistance 5000 --minBlockSize 5000 --queryGenome AcinonyxJubatus --targetGenome FelisCatus
+./hal2synteny cactus.hal out.psl --maxAnchorDistance 5000 --minBlockSize 5000 --queryGenome AcinonyxJubatus --targetGenome FelisCatus
 ```
 
 Search for breakpoints in query.
