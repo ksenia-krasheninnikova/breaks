@@ -10,7 +10,7 @@ bool are_syntenic(const PslBlock& a, const PslBlock& b){
 }
 
 bool is_not_overlapping_ordered_pair(const PslBlock& a, const PslBlock& b, 
-                                                const int threshold) {
+                                                const hal_size_t threshold) {
     return are_syntenic(a, b) &&
              0 <= b.qStart - a.qEnd && 
                 b.qStart - a.qEnd < threshold && 
@@ -20,7 +20,7 @@ bool is_not_overlapping_ordered_pair(const PslBlock& a, const PslBlock& b,
 
 std::vector<int> get_next(const int pos, 
                 const std::vector<PslBlock>& queryGroup,
-                 const int maxAnchorDistance) {
+                 const hal_size_t maxAnchorDistance) {
     std::vector<int> f;
     for (auto i = pos + 1; i < queryGroup.size(); ++i) {
         if (is_not_overlapping_ordered_pair(queryGroup[pos], queryGroup[i], 
@@ -50,12 +50,12 @@ std::vector<int> get_next(const int pos,
 // w_j < w_i + w_e(ij) => w_j must be updated
 // Also keeps track of how we came to this state:
 // (prev_vertex, weight)
-std::map<int, std::pair<int, int> > 
+std::map<int, std::pair<int, hal_size_t> > 
                                 weigh_dag(const std::vector<PslBlock>& group, 
                                         std::map<int, std::vector<int> >& dag, 
                                         const std::set<int>& hiddenVertices,
-                                        const int maxAnchorDistance){
-    std::map<int,std::pair<int,int> > weightedDag;
+                                        const hal_size_t maxAnchorDistance){
+    std::map<int,std::pair<int,hal_size_t> > weightedDag;
     for (int i = 0; i < group.size(); ++i) {
         if (hiddenVertices.count(i)) continue; 
         std::vector<int> nexts;
@@ -84,19 +84,19 @@ std::map<int, std::pair<int, int> >
     return weightedDag; 
 }
 
-int get_maxed_vertex(const std::map<int, std::pair<int, int> >& weightedDag) {
-    int max = weightedDag.cbegin()->second.second;
+int get_maxed_vertex(const std::map<int, std::pair<int, hal_size_t> >& weightedDag) {
+    hal_size_t maxWeight = weightedDag.cbegin()->second.second;
     int maxPos = weightedDag.cbegin()->first;
     for (auto it = weightedDag.cbegin(); it != weightedDag.cend(); ++it) {
-        if (it->second.second >= max) {
-            max = it->second.second;
+        if (it->second.second >= maxWeight) {
+            maxWeight = it->second.second;
             maxPos = it->first;
         }
     }
     return maxPos;
 }
 
-std::vector<PslBlock> traceback(std::map<int, std::pair<int, int> >& weightedDag, 
+std::vector<PslBlock> traceback(std::map<int, std::pair<int, hal_size_t> >& weightedDag, 
                                 std::set<int>& hiddenVertices, 
                                 const std::vector<PslBlock>& group) {
     // Chooses the path of the heaviest weight
@@ -127,8 +127,8 @@ struct {
 } qStartLess;
 
 std::vector<std::vector<PslBlock> > dag_merge(const std::vector<PslBlock>& blocks, 
-                                        const int minBlockBreath, 
-                                        const int maxAnchorDistance){
+                                        const hal_size_t minBlockBreath, 
+                                        const hal_size_t maxAnchorDistance){
     std::map<std::string, std::vector<PslBlock> > blocksByQName;
     for (auto block : blocks) blocksByQName[block.qName].push_back(block);
     std::vector<std::vector<PslBlock> > paths;
@@ -152,6 +152,7 @@ std::vector<std::vector<PslBlock> > dag_merge(const std::vector<PslBlock>& block
         }
     }
     return paths;
+   
 }
 
 

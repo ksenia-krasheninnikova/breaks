@@ -9,33 +9,76 @@
 
 #include "psl_io.cpp"
 #include "psl_merger.cpp"
+#include "hal2psl.cpp"
+
 
 static hal::CLParserPtr initParser() {
-  hal::CLParserPtr optionsParser = hal::hdf5CLParserInstance(true);
-  optionsParser->addArgument("inPslPath", "input psl file from liftover");
+  auto optionsParser = hal::hdf5CLParserInstance();
+  optionsParser->addArgument("halFile", "input psl file from liftover");
+  optionsParser->addOption("queryGenome", "source genome", "\"\"");
+  optionsParser->addOption("targetGenome", "reference genome name", "\"\"");
   optionsParser->addArgument("outPslPath", "output psl file ffor synteny blocks");
-  //optionsParser->addArgument("halFile", "input hal file");
-  optionsParser->addArgument("minBlockSize", 
-                           "lower bound on synteny block length. default 5000bp");
-  optionsParser->addArgument("maxAnchorDistance", 
-                           "upper bound on distance for syntenic psl blocks. default 5000bp");
+  optionsParser->addOption("minBlockSize", 
+                           "lower bound on synteny block length",
+                           5000);
+  optionsParser->addOption("maxAnchorDistance", 
+                           "upper bound on distance for syntenic psl blocks", 
+                           5000);
   return optionsParser;
     
 }
 
+const hal::Genome* openGenomeOrThrow(const hal::AlignmentConstPtr& alignment,
+                                    const std::string& genomeName) {
+    const hal::Genome* genome = alignment->openGenome(genomeName);
+    if (genome == NULL){
+        throw hal_exception(std::string("Reference genome, ") + genomeName + 
+                            ", not found in alignment");
+     }
+    return genome;
+}
+
+hal::AlignmentConstPtr openAlignmentOrThrow(const std::string& halFile,
+                                         const hal::CLParserPtr& optionsParser){
+    
+    auto alignment = hal::openHalAlignmentReadOnly(halFile, optionsParser);
+    if (alignment->getNumGenomes() == 0){
+      throw hal_exception("hal alignment is empty");
+    }
+    return alignment;
+}
+
+ void validateInputOrThrow(const std::string& queryGenomeName,
+                                const std::string& targetGenomeName) {
+      if (queryGenomeName == "\"\"" || targetGenomeName == "\"\""){
+        throw hal_exception("both --queryGenome and --targetGenome must be"
+                          "specified");
+        }
+    
+        if (queryGenomeName == targetGenomeName){
+        throw hal_exception("--queryGenome and --targetGenome must be"
+                          "different");
+        }
+}
+ 
+
 
 int main(int argc, char *argv[]) {
     hal::CLParserPtr optionsParser = initParser();
-    std::string inPslPath;
+    std::string halFile;
     std::string outPslPath;
-    int minBlockSize;
-    int maxAnchorDistance;
+    std::string queryGenomeName;
+    std::string targetGenomeName;
+    hal_size_t minBlockSize;
+    hal_size_t maxAnchorDistance;
     try {
         optionsParser->parseOptions(argc, argv);
-        inPslPath = optionsParser->getArgument<std::string>("inPslPath");
+        halFile = optionsParser->getArgument<std::string>("halFile");
+        queryGenomeName = optionsParser->getOption<std::string>("queryGenome");
+        targetGenomeName = optionsParser->getOption<std::string>("targetGenome");
         outPslPath = optionsParser->getArgument<std::string>("outPslPath");
-        minBlockSize = optionsParser->getArgument<int>("minBlockSize");
-        maxAnchorDistance = optionsParser->getArgument<int>("maxAnchorDistance");
+        minBlockSize = optionsParser->getOption<hal_size_t>("minBlockSize");
+        maxAnchorDistance = optionsParser->getOption<hal_size_t>("maxAnchorDistance");
         optionsParser->setDescription("convert psl alignments into synteny blocks");
     }
     catch(std::exception& e) {
@@ -43,8 +86,31 @@ int main(int argc, char *argv[]) {
         optionsParser->printUsage(std::cerr);
         exit(1);
     }
-    auto blocks = psl_io::get_blocks_set(inPslPath);
-    auto merged_blocks = dag_merge(blocks, minBlockSize, maxAnchorDistance);
+    
+    validateInputOrThrow(queryGenomeName,targetGenomeName);
+    try {  
+    auto alignment = openAlignmentOrThrow(halFile, optionsParser);
+    auto targetGenome = openGenomeOrThrow(alignment, targetGenomeName);
+    auto queryGenome = openGenomeOrThrow(alignment, queryGenomeName);    
+    
+    //auto blocks = psl_io::get_blocks_set("");
+    
+    auto hal2psl = hal::Hal2Psl();
+    std::cout << "converting"   << std::endl;                  
+    auto blocks = hal2psl.convert2psl(alignment, queryGenome,
+                        targetGenome);
+    
+    std::cout << "merging"   << std::endl;                  
+    auto merged_blocks = dag_merge(blocks, 
+                            minBlockSize, maxAnchorDistance);
+    std::cout << "writing psl"   << std::endl;                  
     psl_io::write_psl(merged_blocks, outPslPath);
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "Exception caught: " << e.what() << std::endl;
+        return 1;
+    }
     return 0;
+    
 }

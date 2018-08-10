@@ -6,21 +6,20 @@
 #include <sstream>
 #include <iterator>
 
-class PslBlock {
-    public:
-    int qStart;
-    int qEnd;
-    int tStart;
-    int tEnd;
-    int size;
-    int tSize;
-    int qSize;
+struct PslBlock {
+    hal_size_t qStart;
+    hal_size_t qEnd;
+    hal_size_t tStart;
+    hal_size_t tEnd;
+    hal_size_t size;
+    hal_size_t tSize;
+    hal_size_t qSize;
     std::string qName;
     std::string tName;
     std::string tSeq;
     std::string qSeq;
     std::string strand;
-    PslBlock(int qStart, int tStart, int size, std::string strand,
+    PslBlock(hal_size_t qStart, hal_size_t tStart, hal_size_t size, std::string strand,
              const std::string& qName, const std::string& tName,
              int qSize, int tSize,
              const std::string& qSeq = "",
@@ -38,6 +37,11 @@ class PslBlock {
         this->tSeq = tSeq;
         this->qSeq = qSeq;
     }
+    PslBlock() {}
+    
+    
+    
+    //void initBlock(ColumnIteratorConstPtr col);
 };
 
 
@@ -53,13 +57,13 @@ class Psl {
     int tBaseInsert;
     std::string strand;
     std::string qName;
-    int qSize;
-    int qStart;
-    int qEnd;
+    hal_size_t qSize;
+    hal_size_t qStart;
+    hal_size_t qEnd;
     std::string tName;
-    int tSize;
-    int tStart;
-    int tEnd;
+    hal_size_t tSize;
+    hal_size_t tStart;
+    hal_size_t tEnd;
     int blockCount;
     bool haveSeqs;
     std::vector<PslBlock> blocks;
@@ -85,7 +89,7 @@ class Psl {
     void parseBlocks(const std::string& blockSizesStr,
                     const std::string& qStartsStr,
                     const std::string& tStartsStr,
-                    int qSize, int tSize,
+                    hal_size_t qSize, hal_size_t tSize,
                     const std::string& qSeqsStr, 
                     const std::string& tSeqsStr) {
         auto blockSizes = intArraySplit(blockSizesStr);
@@ -118,13 +122,13 @@ class Psl {
         tBaseInsert = stoi(row[7]);
         strand = row[8];
         qName = row[9];
-        qSize = stoi(row[10]);
-        qStart = stoi(row[11]);
-        qEnd = stoi(row[12]);
+        qSize = (hal_size_t)stoi(row[10]);
+        qStart = (hal_size_t)stoi(row[11]);
+        qEnd = (hal_size_t)stoi(row[12]);
         tName = row[13];
-        tSize = stoi(row[14]);
-        tStart = stoi(row[15]);
-        tEnd = stoi(row[16]);
+        tSize = (hal_size_t)stoi(row[14]);
+        tStart = (hal_size_t)stoi(row[15]);
+        tEnd = (hal_size_t)stoi(row[16]);
         blockCount = stoi(row[17]);
         haveSeqs = row.size() > 21;
         parseBlocks(row[18], row[19], row[20], qSize, tSize,
