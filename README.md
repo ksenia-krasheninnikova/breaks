@@ -2,7 +2,18 @@ synteny/ contains code for convertions of pairwise psl alignments into synteny b
 
 gene_breaks/ contains code for convertions of single nucleotide markers into breakpoints
 
+c++/ contains code for synteny implementaion as part of hal
+
 Example usage:
+
+Example:
+
+Set ```rootPath``` in Makefile
+```
+cd c++
+make
+./hal2synteny cactus.hal out.psl --maxAnchorDistance 5000 --minBlockSize 5000 --queryGenome AcinonyxJubatus --targetGenome FelisCatus
+```
 
 Search for breakpoints in query.
 ```bash
