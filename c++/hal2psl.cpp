@@ -32,6 +32,9 @@ std::vector<PslBlock> hal::Hal2Psl::convert2psl(hal::AlignmentConstPtr alignment
     if (srcGenome->getNumSequences() > 0){
         _srcGenome = srcGenome;
         _tgtGenome = tgtGenome; 
+        _coalescenceLimit = NULL;
+        _traverseDupes = true;
+        _addExtraColumns = false;
         _missedSet.clear();
         _tgtSet.clear();
         _tgtSet.insert(tgtGenome);
