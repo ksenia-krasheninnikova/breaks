@@ -26,7 +26,8 @@ void hal::Hal2Psl::storePslResults(std::vector<PslBlock>& pslBlocks){
 }
 std::vector<PslBlock> hal::Hal2Psl::convert2psl(hal::AlignmentConstPtr alignment,
                        const hal::Genome* srcGenome,
-                       const hal::Genome* tgtGenome){
+                       const hal::Genome* tgtGenome,
+                       const std::string srcChrom){
     
     std::vector<PslBlock> pslBlocks;
     if (srcGenome->getNumSequences() > 0){
@@ -43,6 +44,8 @@ std::vector<PslBlock> hal::Hal2Psl::convert2psl(hal::AlignmentConstPtr alignment
         for (; !seqIt->equals(seqEnd); seqIt->toNext()) {
           _outBedLines.clear();
           _srcSequence = seqIt->getSequence(); 
+          auto chrName = _srcSequence->getName(); 
+          //if (srcChrom != chrName) {continue;}
           _bedLine._start = 0;
           _bedLine._end = _srcSequence->getSequenceLength(); 
           _mappedBlocks.clear();
@@ -59,7 +62,6 @@ std::vector<PslBlock> hal::Hal2Psl::convert2psl(hal::AlignmentConstPtr alignment
     }
     return pslBlocks;
 }
-
 
 
 void hal::Hal2Psl::makeUpPsl(const std::vector<hal::PSLInfo>& vpsl,
@@ -80,16 +82,18 @@ void hal::Hal2Psl::makeUpPsl(const std::vector<hal::PSLInfo>& vpsl,
     b.qStart = psl._qBlockStarts[i] - psl._qChromOffset;
     b.qEnd = b.qStart + b.size;
     if (psl._qStrand == '-'){
-        b.qStart = psl._qSeqSize - b.qStart - b.size;
-        b.qEnd = psl._qSeqSize - b.qStart;
+        auto posStart = b.qStart;
+        b.qStart = psl._qSeqSize - posStart - b.size;
+        b.qEnd = psl._qSeqSize - posStart;
     }
     
     b.tStart = blocks[i]._start + start;
     b.tEnd = b.tStart + b.size;
     if (strand == '-')
     {
-      b.tStart = psl._tSeqSize - b.tStart - b.size;
-      b.tEnd = psl._tSeqSize - b.tStart;
+      auto posStart = b.tStart;
+      b.tStart = psl._tSeqSize - posStart - b.size;
+      b.tEnd = psl._tSeqSize - posStart;
     }
     std::stringstream ss;
     ss << psl._qStrand << strand;
@@ -100,6 +104,5 @@ void hal::Hal2Psl::makeUpPsl(const std::vector<hal::PSLInfo>& vpsl,
     b.tName = chrName;
     pslBlocks.push_back(b);
   }
-  
 }
 

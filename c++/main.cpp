@@ -24,6 +24,9 @@ static hal::CLParserPtr initParser() {
   optionsParser->addOption("maxAnchorDistance", 
                            "upper bound on distance for syntenic psl blocks", 
                            5000);
+  //optionsParser->addOption("queryChromosome",
+  //                          "chromosome to infer synteny",
+  //                          ""); 
   return optionsParser;
     
 }
@@ -69,6 +72,7 @@ int main(int argc, char *argv[]) {
     std::string outPslPath;
     std::string queryGenomeName;
     std::string targetGenomeName;
+    std::string queryChromosome;
     hal_size_t minBlockSize;
     hal_size_t maxAnchorDistance;
     try {
@@ -79,6 +83,7 @@ int main(int argc, char *argv[]) {
         outPslPath = optionsParser->getArgument<std::string>("outPslPath");
         minBlockSize = optionsParser->getOption<hal_size_t>("minBlockSize");
         maxAnchorDistance = optionsParser->getOption<hal_size_t>("maxAnchorDistance");
+        //queryChromosome = optionsParser->getOption<std::string>("queryChromosome");
         optionsParser->setDescription("convert psl alignments into synteny blocks");
     }
     catch(std::exception& e) {
@@ -93,17 +98,17 @@ int main(int argc, char *argv[]) {
     auto targetGenome = openGenomeOrThrow(alignment, targetGenomeName);
     auto queryGenome = openGenomeOrThrow(alignment, queryGenomeName);    
     
-    //auto blocks = psl_io::get_blocks_set("");
     
     auto hal2psl = hal::Hal2Psl();
-    std::cout << "converting"   << std::endl;                  
+    std::cout << "reading hal " << std::endl;                  
     auto blocks = hal2psl.convert2psl(alignment, queryGenome,
-                        targetGenome);
+                        targetGenome, queryChromosome);
     
-    std::cout << "merging"   << std::endl;                  
+
+    std::cout << "merging "  << blocks.size() << " blocks"<< std::endl;                  
     auto merged_blocks = dag_merge(blocks, 
                             minBlockSize, maxAnchorDistance);
-    std::cout << "writing psl"   << std::endl;                  
+    std::cout << "writing psl "   << std::endl;                  
     psl_io::write_psl(merged_blocks, outPslPath);
     }
     catch(std::exception& e)

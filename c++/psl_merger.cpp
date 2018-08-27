@@ -134,6 +134,7 @@ std::vector<std::vector<PslBlock> > dag_merge(const std::vector<PslBlock>& block
     std::vector<std::vector<PslBlock> > paths;
     for (auto pairs : blocksByQName) {
         std::vector<PslBlock> group = pairs.second; 
+        std::string qName = pairs.first;
         std::map<int, std::vector<int> > dag;
         std::set<int> hiddenVertices;
         std::sort(group.begin(), group.end(), qStartLess); 
@@ -147,6 +148,7 @@ std::vector<std::vector<PslBlock> > dag_merge(const std::vector<PslBlock>& block
             auto qLen = path.back().qEnd - path[0].qStart;
             auto tLen = path.back().tEnd - path[0].tStart;
             if (qLen >= minBlockBreath && tLen >= minBlockBreath){
+            //if (qLen >= minBlockBreath && tLen >= minBlockBreath){
                 paths.push_back(path);
             }
         }

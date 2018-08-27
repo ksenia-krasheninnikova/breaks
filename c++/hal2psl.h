@@ -33,7 +33,8 @@ class Hal2Psl : public hal::BlockLiftover {
     Hal2Psl(){}
     std::vector<PslBlock> convert2psl(hal::AlignmentConstPtr alignment,
                        const hal::Genome* srcGenome,
-                       const hal::Genome* tgtGenome);
+                       const hal::Genome* tgtGenome,
+                       const std::string srcChrom);
 };
 }
 #endif /* HAL_MERGER_H */

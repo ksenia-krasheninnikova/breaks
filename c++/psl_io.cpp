@@ -44,6 +44,7 @@ std::vector<int> get_tInserts(const std::vector<PslBlock>& blocks) {
         auto dif = blocks[i+1].tStart - blocks[i].tEnd;
         if (dif > 0) {
             result.push_back(dif);
+            //std::cout << blocks[i+1].tStart << " "  << blocks[i].tEnd << " " << dif << std::endl;
         }
     }
     return result;
@@ -71,15 +72,20 @@ std::vector<int> get_tInserts(const std::vector<PslBlock>& blocks) {
     psl.tSize = blocks[0].tSize;
     psl.strand = blocks[0].strand; 
     psl.blockCount = blocks.size();
-    if (psl.strand == "++") {
-        psl.tStart = blocks[0].tStart;
-        psl.tEnd = blocks.back().tEnd;
-    }
+    psl.blocks = blocks;
+    //if (psl.strand == "++") {
+    psl.tStart = blocks.front().tStart;
+    psl.tEnd = blocks.back().tEnd;
+    /*}
     else if (psl.strand == "+-") {
         psl.tEnd = psl.tSize - blocks[0].tStart;
         psl.tStart = psl.tSize - blocks.back().tEnd; 
-    }
-    psl.blocks = blocks;
+        //??for (auto b: psl.blocks) {
+        //    b.tStart = psl.tSize - b.tStart;
+        //}
+        //std::reverse(psl.blocks.begin(),psl.blocks.end());
+
+    }*/
     return psl;
  }
  
